@@ -1,5 +1,30 @@
 // Utility functions for ShopifySectionEditor
 
+export const settingTypes = [
+  "checkbox",
+  "color",
+  "collection",
+  "collection_list",
+  "image_picker",
+  "link_list",
+  "number",
+  "page",
+  "paragraph",
+  "product",
+  "product_list",
+  "radio",
+  "range",
+  "richtext",
+  "select",
+  "text",
+  "textarea",
+  "video_url",
+  "font_picker",
+  "blog",
+  "url",
+  "header",
+].sort();
+
 export const handlePasteCode = (shopifyCode, setError, setSchema) => {
   setError("");
 
@@ -53,6 +78,16 @@ export const toggleCollapse = (index, collapsed, setCollapsed) => {
 
 export const handleDragStart = (e, index) => {
   e.dataTransfer.setData("text/plain", index);
+};
+
+export const handleKeyPress = (e, elementType) => {
+  // Check if the pressed key is the spacebar
+  if (e.key === " ") {
+    // Block spacebar for 'id' and 'options > value' fields
+    if (elementType === "id" || elementType === "option-value") {
+      e.preventDefault();
+    }
+  }
 };
 
 export const handleDrop = (e, targetIndex, settings, setSchema) => {

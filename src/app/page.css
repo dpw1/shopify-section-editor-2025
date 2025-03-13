@@ -221,3 +221,13 @@ input[type="checkbox"]:checked::after {
 .collapsible-content > * {
   margin: 5px 0;
 }
+
+.editor-option-inputs {
+  display: flex;
+  padding-left: 20px;
+  gap: 10px;
+}
+
+.editor-option-inputs:first-of-type {
+  margin-top: 7px;
+}
