@@ -24,7 +24,6 @@ export function SortableItem({
   setCollapsed,
 }) {
   const [isEditing, setIsEditing] = useState(false);
-  const [newLabel, setNewLabel] = useState(setting.label || "");
   const [newId, setNewId] = useState(setting.id || "");
   const [newColor, setNewColor] = useState(setting.default || "#000000");
   const [newDefault, setNewDefault] = useState(setting.default || "");
@@ -60,7 +59,6 @@ export function SortableItem({
   });
 
   useEffect(() => {
-    setNewLabel(setting.label || "");
     setNewId(setting.id || "");
     setNewColor(setting.default || "#000000");
     setNewDefault(setting.default || "");
@@ -70,12 +68,9 @@ export function SortableItem({
 
   useEffect(() => {
     // Update the schema JSON in real-time
-    // You can send this data to a server or update local storage or anything else
     const updatedSchema = { ...schema, settings: [...schema.settings] };
     console.log("Updated schema in real-time: ", updatedSchema);
-    // You could save this to a local file or update an API endpoint here if needed
-    // Example: saveToLocalStorage(updatedSchema);
-  }, [schema.settings]); // Dependency array to trigger when schema.settings is updated
+  }, [schema.settings]);
 
   const handleInputChange = (field, value) => {
     const updatedSettings = [...schema.settings];
@@ -87,8 +82,8 @@ export function SortableItem({
     e.stopPropagation();
     setIsEditing(true);
   };
+
   const handleBlur = () => {
-    handleInputChange("label", newLabel);
     handleInputChange("id", newId);
 
     if (setting.type === "color") {
@@ -100,7 +95,6 @@ export function SortableItem({
       handleInputChange("info", newInfo);
     }
     if (setting.type === "select") {
-      // Ensure the updated options are passed back to the parent schema
       handleInputChange("options", newOptions);
     }
     setIsEditing(false);
@@ -177,12 +171,10 @@ export function SortableItem({
     const updatedOptions = newOptions.filter((_, index) => index !== idx);
     setNewOptions(updatedOptions);
 
-    // Update the schema to reflect the removal of the option
     setSchema((prevSchema) => ({
       ...prevSchema,
       settings: prevSchema.settings.map((item) => {
         if (item.id === setting.id) {
-          // Update only the options for the setting being edited
           return {
             ...item,
             options: updatedOptions,
@@ -194,26 +186,20 @@ export function SortableItem({
   };
 
   const handleOptionChange = (idx, field, value) => {
-    // Create a copy of the options array
     const updatedOptions = [...newOptions];
-
-    // Update the correct option's field
     updatedOptions[idx] = {
       ...updatedOptions[idx],
-      [field]: value, // Set either value or label depending on the field
+      [field]: value,
     };
 
-    // Update newOptions state
     setNewOptions(updatedOptions);
-
-    // Also update schema.settings options directly
 
     setSchema((prevSchema) => {
       const updatedSettings = prevSchema.settings.map((item) => {
         if (item.id === setting.id) {
           return {
             ...item,
-            options: updatedOptions, // Update the options for the setting with the matching ID
+            options: updatedOptions,
           };
         }
         return item;
@@ -248,15 +234,15 @@ export function SortableItem({
           {isEditing ? (
             <input
               type="text"
-              value={newLabel}
-              onChange={(e) => setNewLabel(e.target.value)}
+              value={setting.label}
+              onChange={(e) => handleInputChange("label", e.target.value)}
               onBlur={handleBlur}
               onKeyDown={handleKeyDown}
               autoFocus
               className="inline-input"
             />
           ) : (
-            <span>{newLabel || "Untitled Setting"}</span>
+            <span>{setting.label || "Untitled Setting"}</span>
           )}
         </h3>
         <span className="editor-item-collapse">
@@ -285,11 +271,11 @@ export function SortableItem({
           onKeyDown={handleKeyDown}
           placeholder="ID"
           className="input-field"
-          onKeyPress={(e) => handleKeyPress(e, "id")} // Block spacebar for "id"
+          onKeyPress={(e) => handleKeyPress(e, "id")}
         />
         <input
           type="text"
-          defaultValue={newLabel}
+          value={setting.label}
           onChange={(e) => handleInputChange("label", e.target.value)}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
@@ -324,17 +310,17 @@ export function SortableItem({
                   value={option.value}
                   onChange={(e) =>
                     handleOptionChange(idx, "value", e.target.value)
-                  } // Updates the value field
+                  }
                   placeholder="Value"
                   className="input-field"
-                  onKeyPress={(e) => handleKeyPress(e, "option-value")} // Block spacebar for "option-value"
+                  onKeyPress={(e) => handleKeyPress(e, "option-value")}
                 />
                 <input
                   type="text"
                   value={option.label}
                   onChange={(e) =>
                     handleOptionChange(idx, "label", e.target.value)
-                  } // Updates the label field
+                  }
                   placeholder="Label"
                   className="input-field"
                 />
@@ -352,27 +338,17 @@ export function SortableItem({
           <textarea
             value={newDefault}
             onChange={(e) => handleInputChange("default", e.target.value)}
-            onBlur={() => handleInputChange("default", newDefault)}
-            placeholder="Default Value"
+            placeholder="Default value"
             className="input-field"
           />
         )}
         {setting.type === "checkbox" && (
-          <>
-            <input
-              type="checkbox"
-              checked={setting.default === true}
-              onChange={(e) => handleInputChange("default", e.target.checked)}
-              className="checkbox"
-            />
-            <textarea
-              value={newInfo}
-              onChange={(e) => handleInputChange("info", e.target.value)}
-              onBlur={() => handleInputChange("info", newInfo)}
-              placeholder="Info"
-              className="input-field"
-            />
-          </>
+          <textarea
+            value={newInfo}
+            onChange={(e) => handleInputChange("info", e.target.value)}
+            placeholder="Info"
+            className="input-field"
+          />
         )}
       </div>
     </div>
