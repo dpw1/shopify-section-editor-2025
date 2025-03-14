@@ -247,6 +247,7 @@ export function SortableItem({
   };
 
   /* return */
+
   return (
     <div
       ref={(node) => drag(drop(node))}
@@ -424,6 +425,25 @@ export function SortableItem({
                 className="input-field"
                 placeholder={option.charAt(0).toUpperCase() + option.slice(1)}
               />
+            );
+          }
+
+          if (
+            option === "default" &&
+            (setting.type === "select" || setting.type === "radio")
+          ) {
+            return (
+              <select
+                key={uniqueKey}
+                value={setting.default || ""}
+                onChange={(e) => handleInputChange("default", e.target.value)}
+                className="input-field">
+                {newOptions.map((option, idx) => (
+                  <option key={`${uniqueKey}-${idx}`} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             );
           }
 

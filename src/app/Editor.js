@@ -94,7 +94,7 @@ export default function Editor() {
           />
           <div className="editor-container">
             <div className="editor-settings">
-              <div className="editor-buttons">
+              <div className="editor-controls">
                 <button
                   className="paste-code"
                   onClick={() =>

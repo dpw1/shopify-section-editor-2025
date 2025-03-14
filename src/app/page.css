@@ -179,7 +179,7 @@
   height: 100%;
 }
 
-.editor-buttons {
+.editor-controls {
   display: flex;
   gap: 10px;
 }
