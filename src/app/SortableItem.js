@@ -92,7 +92,28 @@ export function SortableItem({
     if (setting.type === "select") {
       handleInputChange("options", newOptions);
     }
+
+    // Check if 'id' is empty
+    // if (!newId) {
+    //   setIdError(true);
+    // } else {
+    //   setIdError(false);
+    // }
+
     setIsEditing(false);
+
+    // Remove 'info' from schema if it's empty
+    const updatedSetting = { ...setting };
+
+    if (newInfo.trim() === "") {
+      delete updatedSetting.info; // Remove 'info' from the schema if it's empty
+    }
+
+    // Update schema with the modified setting
+    const updatedSettings = [...schema.settings];
+    updatedSettings[index] = updatedSetting;
+
+    setSchema({ ...schema, settings: updatedSettings });
   };
 
   const handleKeyDown = (e) => {
@@ -325,13 +346,33 @@ export function SortableItem({
             );
           }
 
-          if (option === "select" && setting.type === "select") {
+          if (option === "default" && setting.type === "checkbox") {
             return (
-              <div key={uniqueKey} className="editor-option-inputs">
+              <div key={uniqueKey} className="checkbox-container">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(setting.default)}
+                    onChange={(e) =>
+                      handleInputChange("default", e.target.checked)
+                    }
+                  />
+                  Default Checked
+                </label>
+              </div>
+            );
+          }
+
+          if (
+            (option === "options" && setting.type === "select") ||
+            (option === "options" && setting.type === "radio")
+          ) {
+            return (
+              <div key={uniqueKey}>
                 {newOptions.map((option, idx) => {
                   const optionKey = `${uniqueKey}-${idx}`;
                   return (
-                    <div key={optionKey}>
+                    <div key={optionKey} className="editor-option-inputs">
                       <input
                         type="text"
                         value={option.value}
@@ -359,16 +400,19 @@ export function SortableItem({
                     </div>
                   );
                 })}
+
+                {/* Add option button */}
+                <button
+                  type="button"
+                  className="add-option"
+                  onClick={handleAddOption}>
+                  Add Option
+                </button>
               </div>
             );
           }
 
-          if (
-            option === "min" ||
-            option === "max" ||
-            option === "default" ||
-            option === "step"
-          ) {
+          if (option === "min" || option === "max" || option === "step") {
             return (
               <input
                 key={uniqueKey}
@@ -379,6 +423,26 @@ export function SortableItem({
                 }
                 className="input-field"
                 placeholder={option.charAt(0).toUpperCase() + option.slice(1)}
+              />
+            );
+          }
+
+          if (option === "default") {
+            return (
+              <input
+                key={uniqueKey}
+                type={setting.type === "range" ? "number" : "text"}
+                value={setting.default}
+                onChange={(e) =>
+                  handleInputChange(
+                    "default",
+                    setting.type === "range"
+                      ? parseFloat(e.target.value)
+                      : e.target.value,
+                  )
+                }
+                className="input-field"
+                placeholder="Default"
               />
             );
           }

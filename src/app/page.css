@@ -256,3 +256,18 @@ input[type="checkbox"]:checked::after {
   padding-left: 5px;
   padding-top: 5px;
 }
+
+.editor-option-inputs {
+  display: flex;
+  gap: 10px;
+}
+
+.add-option {
+  margin: 0 0 0 auto;
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  height: 35px;
+  padding: 0 10px;
+  cursor: pointer;
+}

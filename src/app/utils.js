@@ -104,11 +104,11 @@ export const SCHEMA_TYPES = [
   },
   {
     type: "select",
-    options: ["id", "label", "info", "default"],
+    options: ["id", "label", "info", "options", "default"],
   },
   {
     type: "radio",
-    options: ["id", "label", "info", "default"],
+    options: ["id", "label", "info", "options", "default"],
   },
   {
     type: "image_picker",
