@@ -66,12 +66,6 @@ export function SortableItem({
     setNewOptions(setting.options || [{ value: "", label: "" }]);
   }, [setting]);
 
-  useEffect(() => {
-    // Update the schema JSON in real-time
-    const updatedSchema = { ...schema, settings: [...schema.settings] };
-    console.log("Updated schema in real-time: ", updatedSchema);
-  }, [schema.settings]);
-
   const handleInputChange = (field, value) => {
     const updatedSettings = [...schema.settings];
     updatedSettings[index] = { ...updatedSettings[index], [field]: value };
@@ -110,20 +104,18 @@ export function SortableItem({
     const newType = e.target.value;
     handleInputChange("type", newType);
 
-    if (newType === "color") {
-      const updatedSetting = {
-        type: "color",
-        id: setting.id || `color-setting-${Date.now()}`,
-        label: setting.label || "Color Setting",
-        default: setting.default || "#000000",
-      };
-      setSchema((prevSchema) => ({
-        ...prevSchema,
-        settings: prevSchema.settings.map((item, idx) =>
-          idx === index ? updatedSetting : item,
-        ),
-      }));
-    } else if (newType === "paragraph" || newType === "header") {
+    // Common properties for most types
+    const commonSetting = {
+      id: setting.id || `${newType}-setting-${Date.now()}`,
+      label:
+        setting.label ||
+        `${newType.charAt(0).toUpperCase() + newType.slice(1)} Setting`,
+      info: setting.info || "", // Assuming 'info' should be here as well
+      default: newType === "checkbox" ? false : setting.default || "",
+    };
+
+    // Special cases for paragraph and header (they don't need 'type', 'label', 'id', 'default')
+    if (newType === "paragraph" || newType === "header") {
       const updatedSetting = {
         type: newType,
         content: setting.content || "",
@@ -134,26 +126,24 @@ export function SortableItem({
           idx === index ? updatedSetting : item,
         ),
       }));
-    } else if (newType === "select") {
-      const updatedSetting = {
-        type: "select",
-        id: setting.id || `select-setting-${Date.now()}`,
-        label: setting.label || "Select Setting",
-        options: setting.options || [{ value: "", label: "" }],
-      };
-      setSchema((prevSchema) => ({
-        ...prevSchema,
-        settings: prevSchema.settings.map((item, idx) =>
-          idx === index ? updatedSetting : item,
-        ),
-      }));
     } else {
+      // Handling other types
       const updatedSetting = {
+        ...commonSetting,
         type: newType,
-        id: setting.id || `setting-${Date.now()}`,
-        label: setting.label || "Setting",
-        default: setting.default || "",
       };
+
+      // Special case for select
+      if (newType === "select") {
+        updatedSetting.options = setting.options || [{ value: "", label: "" }];
+      }
+
+      // Special case for checkbox to ensure the default is set to boolean false
+      if (newType === "checkbox") {
+        updatedSetting.default =
+          setting.default !== undefined ? setting.default : false;
+      }
+
       setSchema((prevSchema) => ({
         ...prevSchema,
         settings: prevSchema.settings.map((item, idx) =>
@@ -263,25 +253,41 @@ export function SortableItem({
             </option>
           ))}
         </select>
-        <input
-          type="text"
-          defaultValue={newId}
-          onChange={(e) => handleInputChange("id", e.target.value)}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-          placeholder="ID"
-          className="input-field"
-          onKeyPress={(e) => handleKeyPress(e, "id")}
-        />
-        <input
-          type="text"
-          value={setting.label}
-          onChange={(e) => handleInputChange("label", e.target.value)}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-          placeholder="Label"
-          className="input-field"
-        />
+        {setting.type !== "paragraph" && setting.type !== "header" && (
+          <input
+            type="text"
+            defaultValue={newId}
+            onChange={(e) => handleInputChange("id", e.target.value)}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            placeholder="ID"
+            className="input-field"
+            onKeyPress={(e) => handleKeyPress(e, "id")}
+          />
+        )}
+
+        {setting.type !== "paragraph" && setting.type !== "header" && (
+          <input
+            type="text"
+            value={setting.label}
+            onChange={(e) => handleInputChange("label", e.target.value)}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            placeholder="Label"
+            className="input-field"
+          />
+        )}
+        {(setting.type === "paragraph" || setting.type === "header") && (
+          <input
+            type="text"
+            value={setting.content}
+            onChange={(e) => handleInputChange("content", e.target.value)}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            placeholder="Content"
+            className="input-field"
+          />
+        )}
         {setting.type === "color" && (
           <>
             <SketchPicker
@@ -334,20 +340,34 @@ export function SortableItem({
             ))}
           </>
         )}
-        {setting.type !== "checkbox" && setting.type !== "color" && (
-          <textarea
-            value={newDefault}
-            onChange={(e) => handleInputChange("default", e.target.value)}
-            placeholder="Default value"
+
+        {setting.type !== "paragraph" && setting.type !== "header" && (
+          <input
+            type="text"
+            value={newInfo}
+            onChange={(e) => handleInputChange("info", e.target.value)}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            placeholder="Info"
             className="input-field"
           />
         )}
+        {setting.type !== "checkbox" &&
+          setting.type !== "color" &&
+          setting.type !== "paragraph" &&
+          setting.type !== "header" && (
+            <textarea
+              value={newDefault}
+              onChange={(e) => handleInputChange("default", e.target.value)}
+              placeholder="Default value"
+              className="input-field"
+            />
+          )}
         {setting.type === "checkbox" && (
-          <textarea
-            value={newInfo}
-            onChange={(e) => handleInputChange("info", e.target.value)}
-            placeholder="Info"
-            className="input-field"
+          <input
+            type="checkbox"
+            checked={Boolean(setting.default)}
+            onChange={(e) => handleInputChange("default", e.target.checked)}
           />
         )}
       </div>
