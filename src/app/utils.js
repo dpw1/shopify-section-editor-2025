@@ -25,6 +25,97 @@ export const settingTypes = [
   "header",
 ].sort();
 
+export const SCHEMA_TYPES = [
+  {
+    type: "header",
+    options: ["content"],
+  },
+  {
+    type: "paragraph",
+    options: ["content"],
+  },
+  {
+    type: "text",
+    options: ["id", "label", "info", "placeholder", "default"],
+  },
+  {
+    type: "color",
+    options: ["id", "label", "info", "default"],
+  },
+  {
+    type: "font_picker",
+    options: ["id", "label", "info", "default"],
+  },
+  {
+    type: "collection",
+    options: ["id", "label", "info"],
+  },
+  {
+    type: "product",
+    options: ["id", "label", "info"],
+  },
+  {
+    type: "product_list",
+    options: ["id", "label", "info"],
+  },
+  {
+    type: "collection_list",
+    options: ["id", "label", "info"],
+  },
+  {
+    type: "blog",
+    options: ["id", "label", "info"],
+  },
+  {
+    type: "page",
+    options: ["id", "label", "info"],
+  },
+  {
+    type: "link_list",
+    options: ["id", "label", "info"],
+  },
+  {
+    type: "url",
+    options: ["id", "label", "info"],
+  },
+  {
+    type: "video_url",
+    options: ["id", "label", "accept", "placeholder", "info", "default"],
+  },
+  {
+    type: "richtext",
+    options: ["id", "label", "info", "default"],
+  },
+  {
+    type: "checkbox",
+    options: ["id", "label", "info", "default"],
+  },
+  {
+    type: "range",
+    options: ["id", "label", "min", "max", "step", "unit", "info", "default"],
+  },
+  {
+    type: "textarea",
+    options: ["id", "label", "info", "placeholder", "default"],
+  },
+  {
+    type: "number",
+    options: ["id", "label", "info", "placeholder", "default"],
+  },
+  {
+    type: "select",
+    options: ["id", "label", "info", "default"],
+  },
+  {
+    type: "radio",
+    options: ["id", "label", "info", "default"],
+  },
+  {
+    type: "image_picker",
+    options: ["id", "label", "info"],
+  },
+];
+
 export const handlePasteCode = (shopifyCode, setError, setSchema) => {
   setError("");
 

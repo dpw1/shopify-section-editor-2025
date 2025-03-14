@@ -51,7 +51,17 @@
   cursor: grab;
 }
 
-.remove-setting {
+.setting-container:hover .editor-buttons {
+  opacity: 1;
+  transition: all 0.22s;
+}
+
+.editor-buttons {
+  transition: all 0.32s;
+  opacity: 0;
+}
+
+.editor-button--remove {
   position: absolute;
   top: 5px;
   right: 5px;
@@ -71,7 +81,7 @@
   top: unset;
 }
 
-.remove-setting:hover {
+.editor-button--remove:hover {
   background-color: #e53e3e;
 }
 
@@ -208,13 +218,20 @@ input[type="checkbox"] {
   width: 20px;
   height: 20px;
   position: relative; /* Ensure that the pseudo-element is positioned correctly */
+  margin-left: 5px;
+}
+
+input[type="checkbox"]::after {
+  content: "unchecked";
+  margin-left: 30px;
+  font-size: 12px;
+  color: var(--color-accent); /* Pretty red */
+  padding: 10px 0;
+  cursor: pointer;
 }
 
 input[type="checkbox"]:checked::after {
   content: "checked";
-
-  margin-left: 30px;
-  font-size: 12px;
   color: green; /* Optional: change color */
 }
 
@@ -230,4 +247,12 @@ input[type="checkbox"]:checked::after {
 
 .editor-option-inputs:first-of-type {
   margin-top: 7px;
+}
+
+.editor-label {
+  color: var(--color-text);
+  font-size: 13.33px;
+  display: block;
+  padding-left: 5px;
+  padding-top: 5px;
 }

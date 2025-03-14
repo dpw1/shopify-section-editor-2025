@@ -11,6 +11,7 @@ import {
   handleCopyUpdatedCode,
   settingTypes,
   handleKeyPress,
+  SCHEMA_TYPES,
 } from "./utils";
 import "./page.css";
 import { SortableList } from "./SortableList";
@@ -114,43 +115,62 @@ export function SortableItem({
       default: newType === "checkbox" ? false : setting.default || "",
     };
 
-    // Special cases for paragraph and header (they don't need 'type', 'label', 'id', 'default')
+    // Create a new setting object based on type
+    let updatedSetting = {
+      type: newType,
+      ...commonSetting,
+    };
+
+    // Handle special cases for each type and reset/remove unnecessary properties
     if (newType === "paragraph" || newType === "header") {
-      const updatedSetting = {
-        type: newType,
-        content: setting.content || "",
-      };
-      setSchema((prevSchema) => ({
-        ...prevSchema,
-        settings: prevSchema.settings.map((item, idx) =>
-          idx === index ? updatedSetting : item,
-        ),
-      }));
+      // Only keep 'type' and 'content' for paragraph and header
+      updatedSetting.content = setting.content || "";
+      delete updatedSetting.min;
+      delete updatedSetting.max;
+      delete updatedSetting.step;
+      delete updatedSetting.options;
+      Object.keys(commonSetting).forEach((key) => {
+        delete updatedSetting[key]; // Delete each property of commonSetting
+      });
+    } else if (newType === "range") {
+      // Add range specific properties and remove content
+      updatedSetting.min = setting.min || 0;
+      updatedSetting.max = setting.max || 100;
+      updatedSetting.step = setting.step || 1;
+      delete updatedSetting.content;
+      delete updatedSetting.options;
+    } else if (newType === "select") {
+      // Add select specific properties and remove content, min, max, step
+      updatedSetting.options = setting.options || [{ value: "", label: "" }];
+      delete updatedSetting.content;
+      delete updatedSetting.min;
+      delete updatedSetting.max;
+      delete updatedSetting.step;
+    } else if (newType === "checkbox") {
+      // Checkbox default behavior and remove irrelevant properties
+      updatedSetting.default =
+        setting.default !== undefined ? setting.default : false;
+      delete updatedSetting.content;
+      delete updatedSetting.min;
+      delete updatedSetting.max;
+      delete updatedSetting.step;
+      delete updatedSetting.options;
     } else {
-      // Handling other types
-      const updatedSetting = {
-        ...commonSetting,
-        type: newType,
-      };
-
-      // Special case for select
-      if (newType === "select") {
-        updatedSetting.options = setting.options || [{ value: "", label: "" }];
-      }
-
-      // Special case for checkbox to ensure the default is set to boolean false
-      if (newType === "checkbox") {
-        updatedSetting.default =
-          setting.default !== undefined ? setting.default : false;
-      }
-
-      setSchema((prevSchema) => ({
-        ...prevSchema,
-        settings: prevSchema.settings.map((item, idx) =>
-          idx === index ? updatedSetting : item,
-        ),
-      }));
+      // For other types, remove unnecessary properties
+      delete updatedSetting.content;
+      delete updatedSetting.min;
+      delete updatedSetting.max;
+      delete updatedSetting.step;
+      delete updatedSetting.options;
     }
+
+    // Update the schema
+    setSchema((prevSchema) => ({
+      ...prevSchema,
+      settings: prevSchema.settings.map((item, idx) =>
+        idx === index ? updatedSetting : item,
+      ),
+    }));
   };
 
   const handleAddOption = () => {
@@ -203,17 +223,18 @@ export function SortableItem({
       return res;
     });
   };
-
   return (
     <div
       ref={(node) => drag(drop(node))}
       style={{ opacity: isDragging ? 0.5 : 1 }}
       className="setting-container">
-      <button
-        className="remove-setting"
-        onClick={() => removeSetting(index, setSchema)}>
-        X
-      </button>
+      <div className="editor-buttons">
+        <button
+          className="editor-button editor-button--remove"
+          onClick={() => removeSetting(index, setSchema)}>
+          X
+        </button>
+      </div>
       <div
         className="collapsible-header"
         onClick={() => toggleCollapse(index, collapsed, setCollapsed)}>
@@ -253,123 +274,105 @@ export function SortableItem({
             </option>
           ))}
         </select>
-        {setting.type !== "paragraph" && setting.type !== "header" && (
-          <input
-            type="text"
-            defaultValue={newId}
-            onChange={(e) => handleInputChange("id", e.target.value)}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            placeholder="ID"
-            className="input-field"
-            onKeyPress={(e) => handleKeyPress(e, "id")}
-          />
-        )}
 
-        {setting.type !== "paragraph" && setting.type !== "header" && (
-          <input
-            type="text"
-            value={setting.label}
-            onChange={(e) => handleInputChange("label", e.target.value)}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            placeholder="Label"
-            className="input-field"
-          />
-        )}
-        {(setting.type === "paragraph" || setting.type === "header") && (
-          <input
-            type="text"
-            value={setting.content}
-            onChange={(e) => handleInputChange("content", e.target.value)}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            placeholder="Content"
-            className="input-field"
-          />
-        )}
-        {setting.type === "color" && (
-          <>
-            <SketchPicker
-              color={newColor}
-              onChangeComplete={(color) =>
-                handleInputChange("default", color.hex)
-              }
-              className="input-field"
-            />
-            <input
-              type="text"
-              defaultValue={newColor}
-              onChange={(e) => handleInputChange("default", e.target.value)}
-              onBlur={() => handleInputChange("default", newColor)}
-              className="input-field"
-              placeholder="HEX Color"
-            />
-          </>
-        )}
-        {setting.type === "select" && (
-          <>
-            {newOptions.map((option, idx) => (
-              <div key={idx} className="editor-option-inputs">
-                <input
-                  type="text"
-                  value={option.value}
-                  onChange={(e) =>
-                    handleOptionChange(idx, "value", e.target.value)
+        {SCHEMA_TYPES.find(
+          (schema) => schema.type === setting.type,
+        )?.options.map((option) => {
+          const uniqueKey = `${option}-${setting.type}-${
+            setting.id || Date.now()
+          }`;
+
+          if (
+            option === "content" &&
+            (setting.type === "paragraph" || setting.type === "header")
+          ) {
+            return (
+              <input
+                key={uniqueKey}
+                type="text"
+                value={setting.content}
+                onChange={(e) => handleInputChange("content", e.target.value)}
+                onBlur={handleBlur}
+                onKeyDown={handleKeyDown}
+                placeholder="Content"
+                className="input-field"
+              />
+            );
+          }
+
+          if (option === "default" && setting.type === "color") {
+            return (
+              <div key={uniqueKey}>
+                <SketchPicker
+                  color={newColor}
+                  onChangeComplete={(color) =>
+                    handleInputChange("default", color.hex)
                   }
-                  placeholder="Value"
                   className="input-field"
-                  onKeyPress={(e) => handleKeyPress(e, "option-value")}
                 />
                 <input
                   type="text"
-                  value={option.label}
-                  onChange={(e) =>
-                    handleOptionChange(idx, "label", e.target.value)
-                  }
-                  placeholder="Label"
+                  value={newColor}
+                  onChange={(e) => handleInputChange("default", e.target.value)}
+                  onBlur={() => handleInputChange("default", newColor)}
                   className="input-field"
+                  placeholder="HEX Color"
                 />
-                <button
-                  type="button"
-                  className="remove-option"
-                  onClick={() => handleRemoveOption(idx)}>
-                  Remove
-                </button>
               </div>
-            ))}
-          </>
-        )}
+            );
+          }
 
-        {setting.type !== "paragraph" && setting.type !== "header" && (
-          <input
-            type="text"
-            value={newInfo}
-            onChange={(e) => handleInputChange("info", e.target.value)}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            placeholder="Info"
-            className="input-field"
-          />
-        )}
-        {setting.type !== "checkbox" &&
-          setting.type !== "color" &&
-          setting.type !== "paragraph" &&
-          setting.type !== "header" && (
-            <textarea
-              value={newDefault}
-              onChange={(e) => handleInputChange("default", e.target.value)}
-              placeholder="Default value"
+          if (option === "select" && setting.type === "select") {
+            return (
+              <div key={uniqueKey} className="editor-option-inputs">
+                {newOptions.map((option, idx) => {
+                  const optionKey = `${uniqueKey}-${idx}`;
+                  return (
+                    <div key={optionKey}>
+                      <input
+                        type="text"
+                        value={option.value}
+                        onChange={(e) =>
+                          handleOptionChange(idx, "value", e.target.value)
+                        }
+                        placeholder="Value"
+                        className="input-field"
+                      />
+                      <input
+                        type="text"
+                        value={option.label}
+                        onChange={(e) =>
+                          handleOptionChange(idx, "label", e.target.value)
+                        }
+                        placeholder="Label"
+                        className="input-field"
+                      />
+                      <button
+                        type="button"
+                        className="remove-option"
+                        onClick={() => handleRemoveOption(idx)}>
+                        Remove
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          }
+
+          return (
+            <input
+              key={uniqueKey}
+              type="text"
+              value={setting[option]}
+              onChange={(e) => handleInputChange(option, e.target.value)}
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+              placeholder={option.charAt(0).toUpperCase() + option.slice(1)}
               className="input-field"
             />
-          )}
-        {setting.type === "checkbox" && (
-          <input
-            type="checkbox"
-            checked={Boolean(setting.default)}
-            onChange={(e) => handleInputChange("default", e.target.checked)}
-          />
-        )}
+          );
+        })}
       </div>
     </div>
   );
