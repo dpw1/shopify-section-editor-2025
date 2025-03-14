@@ -137,6 +137,7 @@ export function SortableItem({
       updatedSetting.min = setting.min || 0;
       updatedSetting.max = setting.max || 100;
       updatedSetting.step = setting.step || 1;
+      updatedSetting.unit = "px";
       delete updatedSetting.content;
       delete updatedSetting.options;
     } else if (newType === "select") {
@@ -223,6 +224,8 @@ export function SortableItem({
       return res;
     });
   };
+
+  /* return */
   return (
     <div
       ref={(node) => drag(drop(node))}
@@ -360,6 +363,40 @@ export function SortableItem({
             );
           }
 
+          if (
+            option === "min" ||
+            option === "max" ||
+            option === "default" ||
+            option === "step"
+          ) {
+            return (
+              <input
+                key={uniqueKey}
+                type="number"
+                value={setting[option]}
+                onChange={(e) =>
+                  handleInputChange(option, parseInt(e.target.value))
+                }
+                className="input-field"
+                placeholder={option.charAt(0).toUpperCase() + option.slice(1)}
+              />
+            );
+          }
+
+          if (option === "unit") {
+            return (
+              <input
+                key={uniqueKey}
+                type="text"
+                value={setting.unit}
+                onChange={(e) => handleInputChange("unit", e.target.value)}
+                className="input-field"
+                placeholder="Unit"
+                maxLength={3}
+              />
+            );
+          }
+
           return (
             <input
               key={uniqueKey}
@@ -376,4 +413,6 @@ export function SortableItem({
       </div>
     </div>
   );
+
+  /* end */
 }
