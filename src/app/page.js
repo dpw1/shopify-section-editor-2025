@@ -6,6 +6,7 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <Editor></Editor>
+      hi
     </div>
   );
 }
