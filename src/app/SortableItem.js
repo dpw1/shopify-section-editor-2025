@@ -358,7 +358,6 @@ export function SortableItem({
                       handleInputChange("default", e.target.checked)
                     }
                   />
-                  Default Checked
                 </label>
               </div>
             );
